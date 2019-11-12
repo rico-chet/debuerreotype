@@ -8,6 +8,7 @@ source "$thisDir/.constants.sh" \
 	--flags 'debootstrap-script:' \
 	--flags 'keyring:,arch:' \
 	--flags 'merged-usr,no-merged-usr' \
+	--flags 'check-gpg,no-check-gpg' \
 	-- \
 	'<target-dir> <suite> <timestamp>' \
 	'rootfs stretch 2017-05-08T00:00:00Z' \
@@ -22,6 +23,7 @@ script=
 keyring=
 arch=
 noMergedUsr=
+noCheckGpg=
 while true; do
 	flag="$1"; shift
 	dgetopt-case "$flag"
@@ -34,6 +36,8 @@ while true; do
 		--arch) arch="$1"; shift ;;
 		--merged-usr)    noMergedUsr=  ;;
 		--no-merged-usr) noMergedUsr=1 ;;
+		--check-gpg)    noCheckGpg=  ;;
+		--no-check-gpg) noCheckGpg=1 ;;
 		--) break ;;
 		*) eusage "unknown flag '$flag'" ;;
 	esac
@@ -68,10 +72,11 @@ if [ -z "$nonDebian" ]; then
 fi
 
 debootstrapArgs=(
-	--force-check-gpg
 	--variant=minbase
 )
 [ -n "$noMergedUsr" ] || debootstrapArgs+=( --merged-usr )
+[ -n "$noCheckGpg" ] || debootstrapArgs+=( --force-check-gpg )
+[ -z "$noCheckGpg" ] || debootstrapArgs+=( --no-check-gpg )
 [ -z "$keyring" ] || debootstrapArgs+=( --keyring="$keyring" )
 [ -z "$arch" ] || debootstrapArgs+=( --arch="$arch" )
 
